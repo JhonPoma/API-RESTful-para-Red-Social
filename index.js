@@ -28,9 +28,9 @@ import rutaUsuario from './routes/user.js'
 import rutaPublicacion from './routes/publication.js'
 import rutaFollow from './routes/follow.js'
 
-app.use('/api', rutaUsuario);
-app.use('/api', rutaPublicacion);
-app.use('/api', rutaFollow);
+app.use('/api/user', rutaUsuario);
+app.use('/api/publication', rutaPublicacion);
+app.use('/api/follow', rutaFollow);
 
 
 
