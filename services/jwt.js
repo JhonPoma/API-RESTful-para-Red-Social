@@ -26,6 +26,7 @@ const crearToken = ( usuarioT )=>{
 }
 
 export {
-    crearToken
+    crearToken,
+    secretaClave
 }
 
