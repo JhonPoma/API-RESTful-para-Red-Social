@@ -157,9 +157,32 @@ const login = async (req,res)=>{
 }
 
 
+const perfilUsuario = async (req, res)=>{
+
+    const idUser = req.params.iD
+
+    try {
+        const usuario = await User.findById( idUser ).select( {password:0, role:0})
+        
+        return res.status(200).json({
+            status : 'success',
+            msj : 'Usuario con ID...',
+            user : usuario
+        })
+        
+    } catch (error) {
+        return res.status(500).json({
+            status : 'error',
+            msj : 'El usuario con ese ID no existe...'
+        })
+    }
+
+}
+
 export {
     pruebaUser, 
     getAllUsers, 
     register,
-    login
+    login,
+    perfilUsuario
 }
