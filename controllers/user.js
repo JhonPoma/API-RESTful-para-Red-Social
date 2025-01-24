@@ -1,5 +1,6 @@
 import  {User}  from '../models/user.js'
 import bcrypt from 'bcrypt'
+import {crearToken} from '../services/jwt.js'
 
 const pruebaUser = (req, res)=>{
     return res.status(200).send({
@@ -91,10 +92,71 @@ const register = async (req, res)=>{
         })
         
     }
+}
+
+
+const login = async (req,res)=>{
+
+    // recogeremos parametros body
+    const parametros = req.body
+
+    if( !parametros.email || !parametros.password){
+        return res.status(400).json({
+            status : 'error',
+            msj : 'Faltan datos, email o pass....'
+        })
+    }
+
+    // Buscamos en la bbdd si existe
+    try {
+        const usuarioBD = await User.findOne({email : parametros.email})//.select({"password" : 0})   // Que no me devuelva el pass.
+
+        if(!usuarioBD){
+            return res.status(404).json({
+                status : 'error',
+                msj : 'Usuario no existe en la BD'
+            })
+        }
+
+        // Comprobamos la pass digitada con pass en la BD.
+        const pwdCorroborada = bcrypt.compareSync(parametros.password, usuarioBD.password) // true o false
+        if(!pwdCorroborada){
+            return res.status(400).json({
+                status : 'error',
+                msj : 'Error, el password no coincide...'
+            })
+        }
+        // Devolvemos un TOKEN
+        const token = crearToken(usuarioBD)
+
+        return res.status(200).json({
+            status : 'success',
+            msj : 'Login exitoso',
+            usuario : {
+                id : usuarioBD._id,
+                name : usuarioBD.name,
+                nick : usuarioBD.nick
+            },
+            token
+        })
+
+        
+    } catch (error) {
+        return res.status(500).json({
+            status : 'error',
+            msj : 'Error al hacer login...'
+        })
+    }
+
+
 
 
 }
 
+
 export {
-    pruebaUser, getAllUsers, register
+    pruebaUser, 
+    getAllUsers, 
+    register,
+    login
 }
