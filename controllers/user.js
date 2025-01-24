@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt'
 import {crearToken} from '../services/jwt.js'
 
 const pruebaUser = (req, res)=>{
-    const nombre = req.user.name
+    const nombre = req.user.name    // Esto lo definimos en el auth.js, req.user = payload
     console.log(nombre)
     return res.status(200).send({
         mesage:"msj enviado desde controlador/user.js",
