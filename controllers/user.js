@@ -2,6 +2,7 @@ import  {User}  from '../models/user.js'
 import bcrypt from 'bcrypt'
 import {crearToken} from '../services/jwt.js'
 import mongosePagess from 'mongoose-pagination'
+import fs from 'fs'
 
 const pruebaUser = (req, res)=>{
     const nombre = req.userAuth.name    // Esto lo definimos en el auth.js, req.userAuth = payload
@@ -269,6 +270,56 @@ const update = async (req, res)=>{
     }  
 }
 
+const upload = async (req, res)=>{
+
+    // Recoger el fichero de imagen y comprobar que existe
+    if(!req.file){
+        return res.status(404).json({
+            status : 'error',
+            msj : 'La peticion no incluye la imagen...',
+        })
+    }
+    // consiguir el nombre del archivo
+    let imageName = req.file.originalname
+
+    // sacamos la extension del archivo
+    const imagenSplit = imageName.split('\.') // tendre una array
+    const extension = imagenSplit[1]
+
+    // Comprobamos la extension
+    if(extension!='png' && extension!='jpg' && extension!='jpeg' && extension!='gif'){
+        const filepath = req.file.path
+        const fileDeteled =  fs.unlinkSync(filepath)
+        return res.status(404).json({
+            status : 'error',
+            msj : 'Extension del fichero invalida',
+        })
+    }   
+    
+    // Si es correcto , guardamos la imagen en la bbdd.
+    try {
+        const actualizaImage = await User.findOneAndUpdate(req.userAuth._id, {image : req.file.filename}, {new:true})
+        return res.status(200).json({
+            status : 'success',
+            msj :'Subida de imagenes...',
+            usuario : actualizaImage,
+            file : req.file,
+        })
+
+    } catch (error) {
+            return res.status(500).json({
+            status : 'error',
+            msj :'Error en la subida del avatar...',
+
+            
+        })
+    }
+
+
+
+}
+
+
 export {
     pruebaUser, 
     getAllUsers, 
@@ -276,5 +327,6 @@ export {
     login,
     perfilUsuario,
     list,
-    update
+    update,
+    upload
 }
