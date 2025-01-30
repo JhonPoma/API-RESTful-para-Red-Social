@@ -1,6 +1,7 @@
 import  {User}  from '../models/user.js'
 import bcrypt from 'bcrypt'
 import {crearToken} from '../services/jwt.js'
+import mongosePagess from 'mongoose-pagination'
 
 const pruebaUser = (req, res)=>{
     const nombre = req.user.name    // Esto lo definimos en el auth.js, req.user = payload
@@ -179,10 +180,54 @@ const perfilUsuario = async (req, res)=>{
 
 }
 
+
+// Usaremos pagination de mongoose
+const list = async (req, res)=>{
+
+    // Controlar en que pagina estamos
+    let paginaActual = 1
+    if(req.params.page){
+        paginaActual = req.params.page
+    }
+    paginaActual = parseInt(paginaActual)
+
+    // Consultar con mongoose paginate
+    let itemsPorPagina = 5
+    try {
+        const totalUsuarios = await User.countDocuments()
+        const usuarios = await User.find().sort('_id').paginate(paginaActual, itemsPorPagina)
+        const usuariosEnEstaPagina = usuarios.length
+
+        return res.status(200).json({
+            status : 'success',
+            msj :  'sss...',
+            userr : usuarios,
+            usuariosEnEstaPagina,
+            itemsPorPagina,
+            paginaActual,
+            totalUsuarios : totalUsuarios,
+            totalPaginas: Math.ceil(totalUsuarios/itemsPorPagina)
+        })
+
+        
+    } catch (error) {
+        return res.status(404).json({
+            status : 'error',
+            msj :'Error en la consulta...',
+            erro : error
+        })
+    }
+
+    // devolver el resultado
+
+
+}
+
 export {
     pruebaUser, 
     getAllUsers, 
     register,
     login,
-    perfilUsuario
+    perfilUsuario,
+    list
 }
