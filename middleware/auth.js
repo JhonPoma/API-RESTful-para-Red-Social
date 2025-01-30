@@ -30,7 +30,7 @@ const auth = (req, res, next)=>{
         }
         
         // Agregamos datos del usuario a request
-        req.user = payload
+        req.userAuth = payload
         // console.log(payload)
         
     } catch (error) {

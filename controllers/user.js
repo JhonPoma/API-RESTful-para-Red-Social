@@ -4,7 +4,7 @@ import {crearToken} from '../services/jwt.js'
 import mongosePagess from 'mongoose-pagination'
 
 const pruebaUser = (req, res)=>{
-    const nombre = req.user.name    // Esto lo definimos en el auth.js, req.user = payload
+    const nombre = req.userAuth.name    // Esto lo definimos en el auth.js, req.userAuth = payload
     console.log(nombre)
     return res.status(200).send({
         mesage:"msj enviado desde controlador/user.js",
@@ -218,7 +218,81 @@ const list = async (req, res)=>{
         })
     }
 
-    // devolver el resultado
+}
+
+const update = async (req, res)=>{
+
+    // recogemos info del usuario a actualizar
+    let userIndentificado = req.userAuth             //Esto lo definimos en el auth.js, req.userAuth = payload
+    let userToUpdate = req.body
+
+    delete req.userAuth.iat
+    delete req.userAuth.exp
+    delete req.userAuth.role
+    delete req.userAuth.image
+
+    // comprobar si el usuario ya existe, puede que al modificar insertemos un gmail o nick  
+    // ya existente, eso debemos evitar.
+    try {
+        const usuarioFind = await User.find({
+            $or : [
+                { email : userToUpdate.email },
+                { nick : userToUpdate.nick }
+            ]            
+        })
+
+        let isEmailNickTaken = false
+        usuarioFind.forEach( element => {
+
+            // verificamos si el Email o Nick que quiero actualizar ya está en uso por otro usuario, 
+            // pero excluyendo al usuario actual de esta verificación
+            if(element && element._id != userIndentificado.id){ 
+                isEmailNickTaken = true
+            }            
+        });
+      
+        if ( isEmailNickTaken ){
+            return res.status(200).json({
+                status : 'success',
+                msj : 'El usuario con ese Email o Nick ya existe...'
+            })
+        }
+
+        // Si en body enviamos que queremos actualizar el password
+        if(userToUpdate.password){
+            const hashearPassword = await bcrypt.hash(userToUpdate.password, 10)
+            userToUpdate.password = hashearPassword
+        }
+
+        // actualizamos
+        const usuarioActualizado = await User.findByIdAndUpdate(userIndentificado.id, userToUpdate,{new:true} )
+        
+        return res.status(200).json({
+            status : 'success',
+            msj :'Metodo de actualizaar usuario...',
+            user : usuarioActualizado
+    
+        })
+
+
+    } catch (error) {
+                
+        return res.status(500).json({
+            status : 'error',
+            msj :'Error para actualizar',
+            
+    
+        })
+    }  
+   
+    // si me llega el el nuevo pass lo ciframos
+
+
+    // buscamos y actualizamos
+
+
+ 
+
 
 
 }
@@ -229,5 +303,6 @@ export {
     register,
     login,
     perfilUsuario,
-    list
+    list,
+    update
 }

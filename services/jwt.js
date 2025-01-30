@@ -13,7 +13,8 @@ const crearToken = ( usuarioT )=>{
     const payload = {
         id : usuarioT._id,
         name : usuarioT.name,
-        nick : usuarioT.surname,
+        surname : usuarioT.surname,
+        nick : usuarioT.nick,
         email : usuarioT.email,
         role : usuarioT.role,
         image : usuarioT.image,
