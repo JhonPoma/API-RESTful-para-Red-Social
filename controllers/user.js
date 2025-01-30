@@ -11,6 +11,7 @@ const pruebaUser = (req, res)=>{
         nombreusuario : nombre
     })
 }
+
 const getAllUsers = async (req, res)=>{
 
     try {
@@ -22,16 +23,13 @@ const getAllUsers = async (req, res)=>{
             usuario : usuarios
         })
 
-        
     } catch (error) {
         return res.status(500).json({
             status : 'errorr',
             msj : 'no pude traer todos los usuarios'
         })
     }
-
 }
-
 
 
 // Registro de usuarios
@@ -65,14 +63,12 @@ const register = async (req, res)=>{
             ]
         })
 
-
         if(usuarios && usuarios.length >=1 ){
             return res.status(200).json({
                 status : 'success',
                 msj : 'El usuario ya existe..'
             })
         }
-
 
         // ciframos la contraseña
         const hashPassword = await bcrypt.hash(userToSave.password, 10)
@@ -93,8 +89,7 @@ const register = async (req, res)=>{
         return res.status(500).json({
             status:'error', 
             msj:'error en la consulta'
-        })
-        
+        })   
     }
 }
 
@@ -143,28 +138,21 @@ const login = async (req,res)=>{
             },
             token
         })
-
-        
+   
     } catch (error) {
         return res.status(500).json({
             status : 'error',
             msj : 'Error al hacer login...'
         })
     }
-
-
-
-
 }
 
 
 const perfilUsuario = async (req, res)=>{
 
     const idUser = req.params.iD
-
     try {
         const usuario = await User.findById( idUser ).select( {password:0, role:0})
-        
         return res.status(200).json({
             status : 'success',
             msj : 'Usuario con ID...',
@@ -177,7 +165,6 @@ const perfilUsuario = async (req, res)=>{
             msj : 'El usuario con ese ID no existe...'
         })
     }
-
 }
 
 
@@ -209,7 +196,6 @@ const list = async (req, res)=>{
             totalPaginas: Math.ceil(totalUsuarios/itemsPorPagina)
         })
 
-        
     } catch (error) {
         return res.status(404).json({
             status : 'error',
@@ -217,7 +203,6 @@ const list = async (req, res)=>{
             erro : error
         })
     }
-
 }
 
 const update = async (req, res)=>{
@@ -274,27 +259,14 @@ const update = async (req, res)=>{
     
         })
 
-
     } catch (error) {
                 
         return res.status(500).json({
             status : 'error',
             msj :'Error para actualizar',
-            
     
         })
     }  
-   
-    // si me llega el el nuevo pass lo ciframos
-
-
-    // buscamos y actualizamos
-
-
- 
-
-
-
 }
 
 export {
