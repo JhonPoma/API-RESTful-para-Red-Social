@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import {crearToken} from '../services/jwt.js'
 import mongosePagess from 'mongoose-pagination'
 import fs from 'fs'
+import path from 'path'
 
 const pruebaUser = (req, res)=>{
     const nombre = req.userAuth.name    // Esto lo definimos en el auth.js, req.userAuth = payload
@@ -320,6 +321,26 @@ const upload = async (req, res)=>{
 }
 
 
+const avatar = (req,res)=>{
+
+    // cacamos el parametro de la url
+    const nameAvatar = req.params.file
+
+    // el path real de la imagen
+    const filePath = './upload/avatars/'+nameAvatar
+
+    // comprobar que existe esa image en la ruta
+    fs.stat(filePath, (error, existe)=>{
+        if(!existe){
+            return res.status(404).send({
+                status : "error",
+                msj : 'no existe la imagen...',
+            })
+        }
+        return res.sendFile(path.resolve(filePath))
+    })
+}
+
 export {
     pruebaUser, 
     getAllUsers, 
@@ -328,5 +349,6 @@ export {
     perfilUsuario,
     list,
     update,
-    upload
+    upload,
+    avatar
 }
