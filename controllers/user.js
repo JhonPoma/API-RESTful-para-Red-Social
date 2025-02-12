@@ -252,7 +252,7 @@ const update = async (req, res)=>{
         }
 
         // actualizamos
-        const usuarioActualizado = await User.findByIdAndUpdate(userIndentificado.id, userToUpdate,{new:true} )
+        const usuarioActualizado = await User.findByIdAndUpdate({_id:userIndentificado.id}, userToUpdate,{new:true} )
         
         return res.status(200).json({
             status : 'success',
@@ -299,7 +299,7 @@ const upload = async (req, res)=>{
     
     // Si es correcto , guardamos la imagen en la bbdd.
     try {
-        const actualizaImage = await User.findOneAndUpdate(req.userAuth._id, {image : req.file.filename}, {new:true})
+        const actualizaImage = await User.findOneAndUpdate({_id:req.userAuth.id}, {image : req.file.filename}, {new:true})
         return res.status(200).json({
             status : 'success',
             msj :'Subida de imagenes...',
