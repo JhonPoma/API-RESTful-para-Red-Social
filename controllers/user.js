@@ -4,7 +4,7 @@ import {crearToken} from '../services/jwt.js'
 import mongosePagess from 'mongoose-pagination'
 import fs from 'fs'
 import path from 'path'
-import {followThisUser} from '../services/followService.js'
+import {followUserIds, followThisUser} from '../services/followService.js'
 
 const pruebaUser = (req, res)=>{
     const nombre = req.userAuth.name    // Esto lo definimos en el auth.js, req.userAuth = payload
@@ -194,6 +194,9 @@ const list = async (req, res)=>{
         const usuarios = await User.find().sort('_id').paginate(paginaActual, itemsPorPagina)
         const usuariosEnEstaPagina = usuarios.length
 
+        // Mostramos tambien mis seguidores y a los que sigo
+        let idMyFollowing = await followUserIds(req.userAuth.id)
+
         return res.status(200).json({
             status : 'success',
             msj :  'sss...',
@@ -202,7 +205,10 @@ const list = async (req, res)=>{
             itemsPorPagina,
             paginaActual,
             totalUsuarios : totalUsuarios,
-            totalPaginas: Math.ceil(totalUsuarios/itemsPorPagina)
+            totalPaginas: Math.ceil(totalUsuarios/itemsPorPagina),
+
+            userFollowing : idMyFollowing.followingID,
+            userFollow_me : idMyFollowing.followersID
         })
 
     } catch (error) {
