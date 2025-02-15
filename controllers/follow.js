@@ -1,6 +1,7 @@
 import {Follow} from '../models/follow.js'
 import {User} from '../models/user.js'
 import mongosePagess from 'mongoose-pagination'
+import {followUserIds} from '../services/followService.js'
 
 const pruebaFollow = (req, res)=>{
     return res.status(200).send({
@@ -112,6 +113,8 @@ const following = async(req, res)=>{
         const usuariosEnEstaPagina = follows.length
         const totalDeUser = await Follow.countDocuments()
 
+        let idMyFollowing = await followUserIds(userIdentificado)
+
         return res.status(200).json({
             status : 'success',
             msj : "Exitoso",
@@ -119,7 +122,10 @@ const following = async(req, res)=>{
             usuariosEnEstaPagina : usuariosEnEstaPagina,
             itemsPorPagina : itemsPorPagina,
             paginaActual : page,
-            totalPaginas : Math.ceil(totalDeUser/itemsPorPagina)
+            totalPaginas : Math.ceil(totalDeUser/itemsPorPagina),
+            
+            userFollowing : idMyFollowing.followingID,
+            userFollow_me : idMyFollowing.followersID
         })
 
     } catch (error) {
