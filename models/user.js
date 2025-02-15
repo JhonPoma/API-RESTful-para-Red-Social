@@ -36,7 +36,7 @@ const userSchema = Schema({
 })
 
 // Asignamos el modelo a una constante
-const User = model('user', userSchema, 'users')
+const User = model('User', userSchema, 'users')
 
 export {
     User

@@ -8,7 +8,7 @@ const followSchema = Schema({
     },
     followed : {
         type : Schema.ObjectId,
-        ref : "User",
+        ref : "User"
        
     },
     create_at : {
