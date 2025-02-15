@@ -36,8 +36,26 @@ const followUserIds = async (identificacionID) => {
 
 }
 
+// verifcamos si un usuarioX me sigue a mi y yo a el.
+const followThisUser = async(identificacionID, usuarioX_ID)=>{
+    const following = await Follow.findOne({
+        user : identificacionID,
+        "followed" : usuarioX_ID 
+    })//.select({ "_id": 0, "__v": 0, "user": 0, "create_at":0})//.select({"followed":1, "_id":0})
+    
+    const follower = await Follow.findOne({
+        "user" : usuarioX_ID,
+        followed :identificacionID
+    })//.select({"_id": 0, "__v": 0, "followed": 0, "create_at":0})//.select({"user":1, "_id":0})
+
+    return {
+        following,
+        follower
+    }
+}
 
 
 export {
-    followUserIds
+    followUserIds,
+    followThisUser
 }
