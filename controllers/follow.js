@@ -137,10 +137,59 @@ const following = async(req, res)=>{
     }
 }
 
+// LISTADO DE USUARIOS QUE SIGUEN A CUALQUIER OTRO USUARIO 
+const followers = async(req,res)=>{
+
+    const userIdentificado = req.userAuth.id
+
+    // Si quiero ver de un UsuarioX a quienes sigue, para ello enviamos por url el ID
+    if(req.params.id) userIdentificado==req.params.id
+
+    if(req.params.id.length < 3){
+        req.params.page = req.params.id
+    }
+    let page = req.params.page ? parseInt(req.params.page) : 1
+    const itemsPorPagina = 5
+
+    try {
+        const follows = await Follow.find({
+            followed : userIdentificado
+        }).populate("user followed","-role -password -__v")
+        .paginate(page, itemsPorPagina)
+
+        const usuariosEnEstaPagina = follows.length
+        const totalDeUser = await Follow.countDocuments()
+
+        let idMyFollowing = await followUserIds(userIdentificado)
+
+        return res.status(200).json({
+            status : 'success',
+            msj : "Exitoso",
+            follows : follows,
+            usuariosEnEstaPagina : usuariosEnEstaPagina,
+            itemsPorPagina : itemsPorPagina,
+            paginaActual : page,
+            totalPaginas : Math.ceil(totalDeUser/itemsPorPagina),
+            
+            userFollowing : idMyFollowing.followingID,
+            userFollow_me : idMyFollowing.followersID
+        })
+
+    } catch (error) {
+        return res.status(500).json({
+            status : 'error',
+            msj : "Error al ver seguidores...",
+            error
+        })
+    }
+
+}
+
 
 export  {
     pruebaFollow,
     guardar,
     unfollow,
-    following
+    following,
+    followers
 }
