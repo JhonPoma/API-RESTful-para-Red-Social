@@ -1,4 +1,6 @@
 import  {User}  from '../models/user.js'
+import {Publication} from '../models/publication.js'
+import {Follow} from '../models/follow.js'
 import bcrypt from 'bcrypt'
 import {crearToken} from '../services/jwt.js'
 import mongosePagess from 'mongoose-pagination'
@@ -266,6 +268,8 @@ const update = async (req, res)=>{
         if(userToUpdate.password){
             const hashearPassword = await bcrypt.hash(userToUpdate.password, 10)
             userToUpdate.password = hashearPassword
+        }else{
+            delete userToUpdate.password
         }
 
         // actualizamos
@@ -358,6 +362,43 @@ const avatar = (req,res)=>{
     })
 }
 
+// Un resumen de los following( Yo sigo ), followers(Me siguen), totalPublicacioneMias
+const counter = async(req,res)=>{
+
+    const userAutenticado = req.userAuth.id
+    const userForID = req.params.id // en caso queremos ver de un UsuarioX
+    
+    const usuarioForCounter = userForID || userAutenticado
+
+    try {
+        const following = await Follow.countDocuments({
+            user : usuarioForCounter
+        })
+        console.log(following)
+        const follower = await Follow.countDocuments({
+            followed : usuarioForCounter
+        })
+        const publications = await Publication.countDocuments({
+            user : usuarioForCounter
+        })
+        
+        return res.status(200).json({
+            status : "success",
+            usuarioForCounter,
+            following : following,
+            follower : follower,
+            publications : publications
+        })
+    } catch (error) {
+        return res.status(500).json({
+            status : "error",
+            msj : 'error en los contadores..',
+            error
+        })
+    }
+}
+
+
 export {
     pruebaUser, 
     getAllUsers, 
@@ -367,5 +408,6 @@ export {
     list,
     update,
     upload,
-    avatar
+    avatar,
+    counter
 }

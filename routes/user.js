@@ -1,5 +1,5 @@
 import express, { Router } from 'express'
-import {pruebaUser, getAllUsers, register, login, perfilUsuario, list, update, upload, avatar} from '../controllers/user.js'
+import {pruebaUser, getAllUsers, register, login, perfilUsuario, list, update, upload, avatar, counter} from '../controllers/user.js'
 import {auth} from '../middleware/auth.js'
 import {uploads} from '../middleware/fileUpload.js'
 
@@ -16,5 +16,6 @@ router.put('/update/',auth, update) // Ya no sera necesario mandarle el ID ( /:i
                                     // y al autenticarnos el mismo usuario es el que puede actualizarse.
 router.post('/upload', [auth, uploads.single('file0')], upload)
 router.get('/avatar/:file', auth, avatar)
+router.get('/counter/:id?',auth,counter)
 
 export default router
