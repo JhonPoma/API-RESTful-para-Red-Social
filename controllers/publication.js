@@ -1,6 +1,12 @@
+// Importamos Modelos
 import {Publication} from '../models/publication.js'
-import {uploads} from '../middleware/fileUpload.js'
+import {followUserIds} from '../services/followService.js'
+
+// Importamos modulos
 import fs from 'fs'
+import path from 'path'
+import mongosePagess from 'mongoose-pagination'
+import mongoosePaginate from 'mongoose-paginate-v2'
 
 const pruebaPublication = (req, res)=>{
     return res.status(200).send({
@@ -191,7 +197,7 @@ const uploadFiles = async(req, res)=>{
         const actualizaImage = await Publication.findOneAndUpdate(
             { user:userAutenticado, _id:idPublication}, // buscamos a quien vamos a actualizar
             { file : req.file.filename},                // campo que actualizaremos de nuestro modelo.
-            { new:true}                                 // me devulve los datos actualizados
+            { new:true}                                 // me devulve los datos actualizados, si pongo false me devuelve el doc antes de la actualiza.
         )
         
         return res.status(200).json({
@@ -213,11 +219,95 @@ const uploadFiles = async(req, res)=>{
     }
 }
 
+// Devolvemos archivos multimedias (imagenes,..)
+const media = (req,res)=>{
+
+    // sacamos el parametro de la url
+    const nameMedia = req.params.fileX
+
+    // el path real de la imagen
+    const filePath = './upload/publications/'+nameMedia
+
+    // comprobar que existe esa image en la ruta
+    fs.stat(filePath, (error, existe)=>{
+        if(!existe){
+            return res.status(404).send({
+                status : "error",
+                msj : 'no existe la imagen...',
+            })
+        }
+        return res.sendFile(path.resolve(filePath))
+    })
+}
+
+// Listar todas las publicaciones de los usuarios que SEGUIMOS (feed)
+const feed = async(req, res)=>{
+
+    const userAutenticado = req.userAuth.id
+    const paginaUrl = req.params.page
+
+    let pagina = 1
+    if(paginaUrl) pagina=paginaUrl
+    pagina = parseInt(pagina)
+    
+    let itemPorPagina = 3
+    
+    try {
+        
+        // Sacamos un array de identificadores de users que YO SIGO como user autenticado. Usamos el servicio - followService
+        const myFollowing = await followUserIds(userAutenticado)
+        
+        // Obtenemos el total de publicaciones (sin paginar)
+        const totalPublicacionesEncontradas = await Publication.countDocuments({
+            user: { $in: myFollowing.followingID }  // Usamos el operador $in para buscar coincidencias dentro de un array. 
+                                                    // Compara el valor de "user" con todos los elementos de "followingID" y devuelve
+                                                    // los documentos cuyo campo "user" coincida con **al menos uno** de esos elementos.
+                                                    // Pudimos haber usado de manera implicita  = user:myFollowing.followingID
+        });
+
+        const publications = await Publication.find({
+            user: { $in: myFollowing.followingID }
+        }).sort("-created_at")
+        .select("-_id -created_at -__v")
+        .populate("user", "-__v -password -email")
+        .paginate(pagina, itemPorPagina )
+        
+        if(!totalPublicacionesEncontradas || !publications || totalPublicacionesEncontradas.length===0){
+            return res.status(200).json({
+                status : "success",
+                msj : "No hay publicaciones para mostrar, vacio"
+            })
+        }
+        const totalPublicacionesEncontradasxPagina = publications.length    // sabemos que x defecto sera 3, pero en la ultima pagina disminuira
+        
+        return res.status(200).send({
+            status : "success",
+            msj : 'mostrando las publicaciones de los que YO sigo',
+            following : myFollowing.followingID,
+            publications,
+            paginaURL : pagina,
+            totalPublicaciones : totalPublicacionesEncontradas,
+            totalPublicacionesHere : totalPublicacionesEncontradasxPagina,
+            totalPaginas : Math.ceil(totalPublicacionesEncontradas/itemPorPagina)
+        })
+
+    } catch (error) {
+        return res.status(500).send({
+            status : "error",
+            msj : "Hubo un error al obtener las publicaciones",
+            error : error.message || error
+        })
+    }
+}
+
+
 export {
     pruebaPublication,
     savePublication,
     detailPublication,
     deletePublication,
     listPublicationUser,
-    uploadFiles
+    uploadFiles,
+    media,
+    feed
 }

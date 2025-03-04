@@ -26,8 +26,8 @@ const followUserIds = async (identificacionID) => {
         });
 
         return {
-            followingID : followingLimpio,
-            followersID : followersLimpio
+            followingID : followingLimpio,  // A los que Sigo.
+            followersID : followersLimpio   // A los que me Siguen.
         }
 
     } catch (error) {
