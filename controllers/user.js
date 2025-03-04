@@ -191,7 +191,11 @@ const list = async (req, res)=>{
     let itemsPorPagina = 5
     try {
         const totalUsuarios = await User.countDocuments()
-        const usuarios = await User.find().sort('_id').paginate(paginaActual, itemsPorPagina)
+        const usuarios = await User.find()
+                                    .select('-password -email -role -__v')
+                                    .sort('_id')
+                                    .paginate(paginaActual, itemsPorPagina)
+        
         const usuariosEnEstaPagina = usuarios.length
 
         // Mostramos tambien mis seguidores y a los que sigo
@@ -199,7 +203,7 @@ const list = async (req, res)=>{
 
         return res.status(200).json({
             status : 'success',
-            msj :  'sss...',
+            msj :  'Mostrando todos los usuarios...',
             userr : usuarios,
             usuariosEnEstaPagina,
             itemsPorPagina,
