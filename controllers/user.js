@@ -1,12 +1,18 @@
+// Importar Modelos
 import  {User}  from '../models/user.js'
 import {Publication} from '../models/publication.js'
 import {Follow} from '../models/follow.js'
+
+// Importar dependencias y modulos
 import bcrypt from 'bcrypt'
-import {crearToken} from '../services/jwt.js'
 import mongosePagess from 'mongoose-pagination'
 import fs from 'fs'
 import path from 'path'
+
+// Importar servicios
+import {crearToken} from '../services/jwt.js'
 import {followUserIds, followThisUser} from '../services/followService.js'
+import {validar} from '../helpers/validateUser.js'
 
 const pruebaUser = (req, res)=>{
     const nombre = req.userAuth.name    // Esto lo definimos en el auth.js, req.userAuth = payload
@@ -51,6 +57,15 @@ const register = async (req, res)=>{
         })
         
     }
+    try {
+        validar(parametros)
+    } catch (error) {
+        return res.status(400).json({
+            status : 'error',
+            msj : 'validacion no superada'
+        })
+    }
+
     // creamos un objeto de usuarios
     let userToSave = new User(parametros)
 
